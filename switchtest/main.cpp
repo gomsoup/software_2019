@@ -322,7 +322,21 @@ int switchCamera(){
     return 0;
 }
 
+void showMsgbox(string result){
+    QMessageBox msgBox;
+    msgBox.setText("Done!!");
+    msgBox.setInformativeText(result.c_str());
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
 
+    int ret = msgBox.exec();
+
+    switch(ret){
+    case QMessageBox::Ok:
+        break;
+    }
+    return;
+}
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

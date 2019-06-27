@@ -9,3 +9,4 @@ using namespace std;
 int Khhit();
 int switchCamera();
 void trainData();
+void showMsgbox(string result);

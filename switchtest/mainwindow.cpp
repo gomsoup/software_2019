@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <iostream>
 #include <fstream>
+#include <QMessageBox>
 
 using namespace std;
 
@@ -35,28 +36,26 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
+    string result;
 
     system("/root/check2 -qws");
+
 
     while(true){
         ifstream inp("/etc/face/result");
         if (!inp.is_open()){
-            cout << "not created" << endl;
             continue;
         }
-        else{
-            string tmp;
-            inp >> tmp;
-            if(tmp == "ok")
-                break;
+        else {
+            inp >> result;
         }
     }
+    cout << "return to main" << endl;
     system("rm -rf /etc/face/result");
 
-    this->show();
-    this->update();
-    ui->pushButton->show();
-    ui->pushButton->show();
+    string txt = result + " attendance";
+
+    showMsgbox(txt);
 }
 
 
@@ -69,7 +68,6 @@ void MainWindow::on_pushButton_2_clicked()
     while(true){
         ifstream inp("/etc/face/camera");
         if (!inp.is_open()){
-            cout << "not created" << endl;
             continue;
         }
         else{

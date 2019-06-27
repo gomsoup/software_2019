@@ -108,7 +108,7 @@ vector<Mat> faceDetect(Mat inp){
         exit(0);
     }
 
-    cas.detectMultiScale(gray, faces, 1.1, 3, 0 | CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(150,150));
+    cas.detectMultiScale(gray, faces, 1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(150,150));
 
     for(int i = 0; i < faces.size(); i++){
         Point lb(faces[i].x + faces[i].width, faces[i].y + faces[i].height);
@@ -205,7 +205,7 @@ int trainData(){
 
                 }
 
-                 putText(inp, to_string(label), Point(250,450), FONT_HERSHEY_COMPLEX, 1.2, Scalar(0,255,0));
+                putText(inp, to_string(label), Point(250,450), FONT_HERSHEY_COMPLEX, 1.2, Scalar(0,255,0));
                 cout << label << endl;
             }
         }
@@ -222,7 +222,7 @@ int trainData(){
     cout << "user is " << result << endl;
 
     ofstream out("/etc/face/result");
-    out << "ok" << endl;
+    out << result << endl;
     out.close();
 
     V4LWrapper_CloseCameraCapture (&mycamera);
