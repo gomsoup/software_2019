@@ -5,19 +5,18 @@ import zipfile
 import numpy
 from PIL import Image
 
+cntt = 0
+
 def faceDetect(img):
     cas = cv2.CascadeClassifier("./haarcascade_frontalface_default.xml")
-    faces = cas.detectMultiScale(img, 1.3, 5)
+    faces = cas.detectMultiScale(img, 1.1, 5, minSize=(30,30))
 
     if faces is():
         return None    
-    
+
     for(x,y,w,h) in faces:
-        #해당 얼굴 크기만큼 cropped_face에 잘라 넣기 
-        #근데... 얼굴이 2개 이상 감지되면??
-        #가장 마지막의 얼굴만 남을 듯
         cropped_face = img[y:y+h, x:x+w]
-    #cropped_face 리턴 
+
     return cropped_face
 
 def getImagesWithID(path):
@@ -27,6 +26,15 @@ def getImagesWithID(path):
     filenames = os.listdir(path)
     filenames = [file for file in filenames if file.endswith(".png")]
 
+    try:
+        if not(os.path.isdir(path + "crop")):
+            os.makedirs(os.path.join(path + "crop"))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            print("Failed to create directory!!!!!")
+            raise
+
+    cntt = 0
     for file in filenames:
         print (file)
         img = Image.open(path + file).convert('L')
@@ -36,15 +44,32 @@ def getImagesWithID(path):
         face = faceDetect(img_numpy)
         if face is not None:
             face = cv2.resize(face, (200,200))
-            faces.append(face)
-            labels.append(stdnum)
+            cv2.imwrite(path + "/crop/" + str(cntt) + ".png", face)
+            cntt += 1
         else:
             continue
     
-    print (faces)
-    print (labels)
-    return faces, labels
 
+def getAllImages():
+    faces = []
+    labels = []
+
+    dirnames = os.listdir("./pics")
+    print dirnames
+    
+    for dir in dirnames:
+        print dir
+        path = "./pics/" + dir + "/crop"
+        filenames = os.listdir(path)
+        print (filenames)
+        filenames = [file for file in filenames if file.endswith(".png")]
+
+        for file in filenames:
+            face = cv2.imread(path + "/" + file, cv2.IMREAD_GRAYSCALE)
+            faces.append(numpy.asarray(face, dtype=numpy.uint8))
+            labels.append(int(dir))
+
+    return faces, labels
 
 HOST = socket.gethostname()
 PORT = 50000
@@ -71,18 +96,17 @@ while True:
     clientSocket.send('ok'.encode())
 
     try:
-        if not(os.path.isdir(stdnum)):
-            os.makedirs(os.path.join(stdnum))
+        if not(os.path.isdir("./pics/" + stdnum)):
+            os.makedirs(os.path.join("./pics/" + stdnum))
     except OSError as e:
         if e.errno != errno.EEXIST:
             print("Failed to create directory!!!!!")
             raise
 
-    path = stdnum.decode() + "\\" + stdnum.decode() + ".zip"
+    path = "./pics/" + stdnum.decode() + "/" + stdnum.decode() + ".zip"
     print("filename : " + path)
 
     with open(path.encode(), 'wb') as f:
-        
             print ('file opened')
             print ('receiving data...')
         
@@ -96,8 +120,8 @@ while True:
     print('Successfully get the file')
 
     print('unzip start')
-    zip = zipfile.ZipFile(stdnum.decode() + "\\" + stdnum.decode() + ".zip")
-    zip.extractall(stdnum.decode() + "\\")
+    zip = zipfile.ZipFile(path)
+    zip.extractall("./pics/" + stdnum.decode())
     zip.close()
     print('unzip end') 
 
@@ -105,11 +129,14 @@ while True:
   
 #if __name__ == "__main__":
     print("crop faces...")
-    path = str(stdnum) + "\\" # + "faces" "\\"
-    recognizer = cv2.face.LBPHFaceRecognizer_create()
+    path = "./pics/" + str(stdnum) + "/" # + "faces" "\\"
+    recognizer = cv2.face.createLBPHFaceRecognizer()
+    #recognizer = cv2.face.LBPHFaceRecognizer_create()
 
-    faces, labels = getImagesWithID(path)
+    getImagesWithID(path)
+    faces, labels = getAllImages()
 
+    labels = numpy.asarray(labels, dtype=numpy.int32)
     print("now training..")
     recognizer.train(faces, numpy.array(labels))
     recognizer.save("./train.yml")
