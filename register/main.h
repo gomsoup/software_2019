@@ -3,6 +3,8 @@
 
 #endif // MAIN_H
 #include <iostream>
+#include <vector>
+#include "mainwindow.h"
 
 int Khhit();
 int switchCamera(std::string stdnum);

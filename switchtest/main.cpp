@@ -38,8 +38,8 @@ fsl_v4l_out mydisplay;
 
 char * buffer = (char *) malloc (640 * 480 * 2);
 int cnt = 0; bool isTrain = true;
-auto model = face::createLBPHFaceRecognizer();
-string studnumber = "201324484";
+auto model = face::createLBPHFaceRecognizer(1, 8, 8, 8, 3000.0);
+string studnumber = "201324474";
 
 int Kbhit (void)
 {
@@ -106,7 +106,7 @@ vector<Mat> faceDetect(Mat inp){
         exit(0);
     }
 
-    cas.detectMultiScale(gray, faces, 1.1, 2, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_SCALE_IMAGE, Size(30, 30), Size(100, 100));
+    cas.detectMultiScale(gray, faces, 1.1, 3, 0 | CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(150,150));
 
     for(int i = 0; i < faces.size(); i++){
         Point lb(faces[i].x + faces[i].width, faces[i].y + faces[i].height);
@@ -118,6 +118,7 @@ vector<Mat> faceDetect(Mat inp){
 
         ret.push_back(result);
     }
+
 
     return ret;
 }
@@ -153,31 +154,57 @@ void recognize(){
 }
 
 
-void train(){
-    string path = "/etc/face/db.txt";
-    vector <Mat> images;
-    vector <int> labels;
+void trainData(){
+    //FileStorage fs("/etc/face/face.yml", FileStorage::READ);
 
-    try{
-        dbread(path, images, labels);
+    //model->read(fs["opencv_lbphfaces"]);
+    model->load("/etc/face/face.yml");
+    cout << "train data loaded" << endl;
 
-        cout << "size of the image is" << images.size() << endl;
-        cout << "size of labels is " << labels.size() << endl;
-        cout << "Training begins..." << endl;
-    }catch(cv::Exception& e){
-        cerr << e.msg << endl;
-        exit(1);
+    cout << "capturing..." << endl;
+    V4LWrapper_CreateCameraCapture (&mycamera, "/dev/video0", 640, 480);
+    V4LWrapper_CreateOutputDisplay (&mydisplay, "/dev/fb0", NULL, 640, 480);
+
+    while(!Kbhit()){
+        V4LWrapper_OutputDisplay (&mydisplay, buffer);
+        Mat inp(Size(640,480), IPL_DEPTH_8U, buffer), tmp;
+
+        cvtColor(inp, tmp, COLOR_YUV2RGB_UYVY);
+        vector <Mat> out = faceDetect(tmp);
+
+        if(!out.empty()){
+            Mat res;
+
+            cvtColor(out[0], res, COLOR_BGR2GRAY);
+
+            int label = -1; double confidence;
+            model->predict(res, label, confidence);
+
+            string display = to_string(confidence) + "% Confidence it is user";
+            putText(inp, display, Point(100,120), FONT_HERSHEY_COMPLEX, 1.2, Scalar::all(255));
+            cout << display << endl;
+
+            if(label == -1){
+                putText(inp, "unknown", Point(250, 450), FONT_HERSHEY_COMPLEX, 1.2, Scalar(0, 255, 0));
+                cout << "unknown" << endl;
+            }
+            else{
+                 putText(inp, to_string(label), Point(250,450), FONT_HERSHEY_COMPLEX, 1.2, Scalar(0,255,0));
+                cout << label << endl;
+            }
+        }
+        else{
+           // cout << "face not detected" << endl;
+            putText(inp, "face not found", Point(250,450), FONT_HERSHEY_COMPLEX, 1.2, Scalar(0,255,0));
+            cout << "not found" << endl;
+        }
+
+        V4LWrapper_QueryFrame (&mycamera, (char *)inp.data);
     }
 
 
-    model->train(images, labels);
-    model->save("/etc/face/LBPHface.yml");
-
-    //model->read("/Users/gomsoup/Desktop/opencv/opencv/LBPHface.yml");
-    cout << "training finished..." << endl;
-    isTrain = false;
-
-
+    V4LWrapper_CloseCameraCapture (&mycamera);
+    V4LWrapper_CloseOutputDisplay (&mydisplay);
 }
 
 void detectAndDisplay(Mat& frame)
@@ -215,7 +242,7 @@ void playCamera(){
     V4LWrapper_CreateCameraCapture (&mycamera, "/dev/video0", 640, 480);
     V4LWrapper_CreateOutputDisplay (&mydisplay, "/dev/fb0", NULL, 640, 480);
 
-    while(!Kbhit() && (cnt <= 300) && isTrain){
+    while(!Kbhit() && (cnt <= 100) && isTrain){
 
 
         V4LWrapper_OutputDisplay (&mydisplay, buffer);
@@ -225,7 +252,7 @@ void playCamera(){
 
 
         cvtColor(inp, tmp, COLOR_YUV2RGB_UYVY);
-        cvtColor(tmp, frame_gray, COLOR_RGB2GRAY, 1);
+        cvtColor(tmp, frame_gray, COLOR_RGB2GRAY);
 
         /*
         string text = "hida";
@@ -256,17 +283,42 @@ int switchCamera(){
 
     cnt = 0; isTrain = true;
     cout << "start play camera" << endl;
-    thread t(playCamera);
+    //thread t(playCamera);
 
     cout << "start face detect" << endl;
     //thread t2(recognize);
     //t2.join();
 
+    //t.join();
     cout << "start train" << endl;
- //   train();
-    t.join();
+
+    string line = "python /root/client.py " + studnumber;
+    system(line.c_str());
+
+    cout << "hida" << endl;
+    while(true){
+        ifstream inp("/etc/face/status");
+
+        if(!inp.is_open()){
+            cout << "file not exists";
+            sleep(1);
+            inp.close();
+            continue;
+        }
+        else{
+            string tmp;
+            inp >> tmp;
+            cout << tmp << endl;
+            if(tmp == "alldone")
+                break;
+            inp.close();
+            sleep(1);
+            continue;
+        }
+    }
 
     cout << "all done" << endl;
+
     return 0;
 }
 

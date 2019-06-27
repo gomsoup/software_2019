@@ -6,26 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1550</width>
-    <height>872</height>
+    <width>1024</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1550</width>
-    <height>872</height>
+    <width>1024</width>
+    <height>600</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1550</width>
-    <height>872</height>
+    <width>1024</width>
+    <height>600</height>
    </size>
   </property>
   <property name="baseSize">
    <size>
-    <width>1550</width>
-    <height>872</height>
+    <width>1024</width>
+    <height>600</height>
    </size>
   </property>
   <property name="palette">
@@ -481,37 +481,38 @@
     <property name="geometry">
      <rect>
       <x>300</x>
-      <y>240</y>
-      <width>211</width>
-      <height>61</height>
+      <y>200</y>
+      <width>361</width>
+      <height>101</height>
      </rect>
     </property>
     <property name="text">
-     <string>switch to camera</string>
+     <string>Check</string>
     </property>
    </widget>
    <widget class="QLabel" name="testLabel">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>90</y>
-      <width>761</width>
-      <height>91</height>
+      <x>220</x>
+      <y>60</y>
+      <width>1151</width>
+      <height>121</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>60</pointsize>
+      <pointsize>40</pointsize>
      </font>
     </property>
     <property name="text">
-     <string>Camera switch test</string>
+     <string>Attendance check with 
+face recognition</string>
     </property>
    </widget>
    <widget class="QLabel" name="logo">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>120</x>
       <y>380</y>
       <width>701</width>
       <height>181</height>
@@ -529,12 +530,12 @@
      <rect>
       <x>300</x>
       <y>320</y>
-      <width>211</width>
-      <height>71</height>
+      <width>361</width>
+      <height>101</height>
      </rect>
     </property>
     <property name="text">
-     <string>Train Test</string>
+     <string>Register</string>
     </property>
    </widget>
   </widget>

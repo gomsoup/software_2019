@@ -202,6 +202,11 @@ void trainData(){
         V4LWrapper_QueryFrame (&mycamera, (char *)inp.data);
     }
 
+    ofstream out("/etc/face/result");
+
+    out << "ok" << endl;
+
+    out.close();
 
     V4LWrapper_CloseCameraCapture (&mycamera);
     V4LWrapper_CloseOutputDisplay (&mydisplay);
@@ -276,6 +281,10 @@ void playCamera(){
     V4LWrapper_CloseCameraCapture (&mycamera);
     V4LWrapper_CloseOutputDisplay (&mydisplay);
 
+    ofstream out("/etc/face/camera");
+    out << "ok" << endl;
+    out.close();
+
     qApp->exit();
 }
 
@@ -330,7 +339,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-
 
     w.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     w.show();
